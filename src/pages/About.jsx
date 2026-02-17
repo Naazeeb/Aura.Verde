@@ -10,7 +10,12 @@ export default function About() {
     const target = document.getElementById(id);
     if (!target) return;
     requestAnimationFrame(() => {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      const headerOffset = 88;
+      const top = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+      window.scrollTo({ top, behavior: "smooth" });
+      window.setTimeout(() => {
+        window.history.replaceState(null, "", window.location.pathname);
+      }, 450);
     });
   }, [hash]);
   const steps = [

@@ -44,5 +44,5 @@ npm run build
 
 ## Entrega
 
-- GitHub: `PEGAR_LINK_GITHUB`
-- Vercel: `PEGAR_LINK_VERCEL`
+- GitHub: https://github.com/Naazeeb/Aura-Verde
+- Vercel: https://auraverde.vercel.app/
