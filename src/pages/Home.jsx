@@ -4,6 +4,7 @@ import { collections, products } from "../data/products.js";
 import { useStore } from "../context/store.js";
 import ProductCard from "../components/ProductCard.jsx";
 import ProductQuickViewModal from "../components/ProductQuickViewModal.jsx";
+import AddedModal from "../components/AddedModal.jsx";
 import rinconCasa from "../assets/rincon_casa.jpg";
 import escritorio from "../assets/escritorio.jpg";
 import banoNatural from "../assets/baño_natural.jpg";
@@ -11,7 +12,7 @@ import luzMatinal from "../assets/luz_matinal.jpg";
 
 export default function Home() {
   const nav = useNavigate();
-  const { addToCart } = useStore();
+  const { addToCart, decQty } = useStore();
   const featured = products.slice(0, 6);
   const scenes = [
     { title: "Rincón sereno", image: rinconCasa, alt: "Rincón sereno con plantas" },
@@ -23,6 +24,7 @@ export default function Home() {
   const [heroIndex, setHeroIndex] = useState(0);
   const [pausedUntil, setPausedUntil] = useState(0);
   const [heroQuickOpen, setHeroQuickOpen] = useState(false);
+  const [heroAdded, setHeroAdded] = useState({ open: false, name: "", id: null });
   const [sceneViewerIndex, setSceneViewerIndex] = useState(-1);
 
   useEffect(() => {
@@ -80,6 +82,13 @@ export default function Home() {
     const current = heroItems[heroIndex];
     if (!current) return;
     addToCart(current, 1);
+    setHeroAdded({ open: true, name: current.name, id: current.id });
+  };
+
+  const handleHeroUndo = () => {
+    if (!heroAdded.id) return;
+    decQty(heroAdded.id);
+    setHeroAdded({ open: false, name: "", id: null });
   };
 
   useEffect(() => {
@@ -427,6 +436,13 @@ export default function Home() {
         product={heroItems[heroIndex]}
         onClose={closeHeroQuickView}
         onAdd={handleHeroAdd}
+      />
+
+      <AddedModal
+        open={heroAdded.open}
+        name={heroAdded.name}
+        onClose={() => setHeroAdded({ open: false, name: "", id: null })}
+        onUndo={handleHeroUndo}
       />
 
       {isSceneViewerOpen && currentScene ? (
