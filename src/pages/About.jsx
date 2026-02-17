@@ -180,7 +180,7 @@ export default function About() {
           <p className="p" style={{ margin: "10px 0 0", maxWidth: 980 }}>
             Si tenés poca luz, hay verdes que la abrazan. Si te olvidás de regar,
             mejor: muchas plantas prefieren la paciencia antes que el exceso.
-            Y si convivís con mascotas, lo charlamos: buscamos opciones más seguras
+            Y si convivís con mascotas, buscamos opciones más seguras
             o te ayudamos a ubicar la planta donde esté bien (y tranquila).
           </p>
 

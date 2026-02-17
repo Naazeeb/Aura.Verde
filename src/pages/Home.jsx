@@ -159,7 +159,7 @@ export default function Home() {
                         onClick={openHeroQuickView}
                         type="button"
                       >
-                        Ver catálogo
+                        Ver producto
                       </button>
                     </div>
 
@@ -274,21 +274,20 @@ export default function Home() {
                 Escenas para habitar
               </h2>
               <p className="p" style={{ maxWidth: 720, marginBottom: 0 }}>
-                Pequeños rincones que cambian el aire de la casa: luz, cerámica,
-                textura y presencia.
+                Pequeños rincones que cambian el aire de la casa, para que uses de inspiracion o para que te animes a crear el tuyo.
               </p>
             </div>
           </div>
 
           <div className="grid4" style={{ marginTop: 18 }}>
-  {scenes.map((scene) => (
-    <div className="tile" key={scene.title}>
-      <div className="tile__media">
-        <img src={scene.image} alt={scene.alt} />
-      </div>
-      <div className="tile__cap">{scene.title}</div>
-    </div>
-  ))}
+            {scenes.map((scene) => (
+              <div className="tile" key={scene.title}>
+                <div className="tile__media">
+                  <img src={scene.image} alt={scene.alt} />
+                </div>
+                <div className="tile__cap">{scene.title}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
