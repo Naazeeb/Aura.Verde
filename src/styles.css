@@ -183,7 +183,7 @@ button, input{ font-family: inherit; }
 }
 .mobileMenu a:hover{ background: rgba(126,156,136,.14); }
 
-/* Hero */
+/* Home - Hero */
 .hero{ padding: 52px 0 42px; }
 .heroGrid{
   display: grid;
@@ -346,7 +346,7 @@ button, input{ font-family: inherit; }
   background: rgba(126,156,136,.72);
 }
 
-/* Ritual / cards */
+/* Home - Ritual */
 .card{
   border: 0;
   background: var(--bg);
@@ -369,7 +369,7 @@ button, input{ font-family: inherit; }
 .pillar b{ display:block; font-size: 13px; }
 .pillar span{ display:block; color: var(--muted); font-size: 13px; margin-top: 6px; line-height: 1.4; }
 
-/* ===== RITUAL (scoped) ===== */
+/* Home - Ritual Details */
 .ritual__title { margin-top: 6px; }
 .ritual__lead { max-width: 760px; }
 
@@ -380,7 +380,7 @@ button, input{ font-family: inherit; }
   flex-wrap: wrap;
 }
 
-/* grid general */
+
 .ritual__grid{
   display: grid;
   grid-template-columns: 1.1fr .9fr;
@@ -388,7 +388,7 @@ button, input{ font-family: inherit; }
   align-items: center;
 }
 
-/* trustbar */
+
 .trustbar{
   margin-top: 14px;
   display: flex;
@@ -405,7 +405,7 @@ button, input{ font-family: inherit; }
   color: var(--text);
 }
 
-/* chips */
+
 .chipRow{
   margin-top: 10px;
   display: flex;
@@ -428,7 +428,7 @@ button, input{ font-family: inherit; }
   box-shadow: 0 10px 22px rgba(0,0,0,.08);
 }
 
-/* media derecha */
+
 .ritual__media{
   display: grid;
   gap: 12px;
@@ -436,7 +436,7 @@ button, input{ font-family: inherit; }
 }
 
 
-/* stack cards */
+
 .ritual__stack{
   width: min(460px, 100%);
   display: grid;
@@ -477,7 +477,7 @@ button, input{ font-family: inherit; }
   color: var(--muted);
 }
 
-/* Collections */
+/* Home - Collections */
 .grid5{
   display:grid;
   grid-template-columns: repeat(5, 1fr);
@@ -513,7 +513,7 @@ button, input{ font-family: inherit; }
   line-height: 1.45;
 }
 
-/* Real spaces */
+/* Home - Real Spaces */
 .grid4{
   display:grid;
   grid-template-columns: repeat(4, 1fr);
@@ -702,7 +702,7 @@ button, input{ font-family: inherit; }
 }
 .btnSmall--primary:hover{ background: rgba(126,156,136,.24); }
 
-/* Drawer */
+/* Cart Drawer */
 .drawerBackdrop{
   position: fixed;
   inset: 0;
@@ -784,7 +784,7 @@ button, input{ font-family: inherit; }
 .drawerBtns{ display:flex; gap: 10px; }
 .drawerBtns .btnSmall{ flex: 1; }
 
-/* Modal */
+/* Modals */
 .modalBackdrop{
   position: fixed;
   inset: 0;
@@ -905,7 +905,7 @@ button, input{ font-family: inherit; }
 .modal p{ margin: 0 0 14px; color: var(--muted); line-height: 1.6; }
 .modalActions{ display:flex; gap: 10px; justify-content:flex-end; }
 
-/* Auth modal */
+/* Auth Modal */
 .authModal{
   width: min(520px, 94vw);
   position: relative;
@@ -1118,16 +1118,14 @@ input:focus, textarea:focus{
   }
 }
 
-/* =========================
-   ABOUT
-   ========================= */
+/* About */
 
 .aboutPage{
   position: relative;
   overflow: hidden;
 }
 
-/* Fondo con capas suaves */
+
 .aboutPage::before,
 .aboutPage::after{
   content:"";
@@ -1164,7 +1162,7 @@ input:focus, textarea:focus{
   z-index: 1;
 }
 
-/* HERO */
+/* About - Hero */
 .aboutHero{
   position: relative;
   padding: 22px 18px;
@@ -1189,7 +1187,7 @@ input:focus, textarea:focus{
   opacity: .95;
 }
 
-/* Chips */
+
 .aboutChips{
   display:flex;
   flex-wrap:wrap;
@@ -1217,7 +1215,7 @@ input:focus, textarea:focus{
   box-shadow: 0 0 0 6px rgba(110, 255, 180, .10);
 }
 
-/* Split */
+/* About - Split */
 .aboutSplit{
   display:grid;
   grid-template-columns: 1.4fr .9fr;
@@ -1236,7 +1234,7 @@ input:focus, textarea:focus{
   border: 1px solid rgba(255,255,255,.07);
 }
 
-/* Quote */
+/* About - Quote */
 .aboutQuote{
   padding: 18px;
   border-radius: 18px;
@@ -1321,20 +1319,20 @@ input:focus, textarea:focus{
   box-shadow: 0 10px 25px rgba(110,255,180,.12);
 }
 
-/* Divider */
+
 .aboutDivider{
   height: 1px;
   margin: 18px 0;
   background: linear-gradient(to right, transparent, rgba(255,255,255,.14), transparent);
 }
 
-/* Headings */
+
 .aboutH2{
   margin-top: 22px;
   letter-spacing: -0.01em;
 }
 
-/* Cards */
+/* About - Grids */
 .aboutGrid{
   margin-top: 12px;
 }
@@ -1372,7 +1370,7 @@ input:focus, textarea:focus{
   pointer-events:none;
 }
 
-/* Note */
+/* About - Note */
 .aboutNote{
   padding: 18px;
   border-radius: 18px;
@@ -1389,7 +1387,7 @@ input:focus, textarea:focus{
   flex-wrap: wrap;
 }
 
-/* ===== CART DRAWER (Aura Verde) ===== */
+/* Cart Drawer - Enhancements */
 
 .drawer__title{
   display:flex;
@@ -1411,7 +1409,7 @@ input:focus, textarea:focus{
   gap: 12px;
 }
 
-/* Empty */
+
 .cartEmpty{
   padding: 14px;
   border-radius: 16px;
@@ -1425,7 +1423,7 @@ input:focus, textarea:focus{
   flex-wrap: wrap;
 }
 
-/* Item */
+
 .cartItem{
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,.10);
@@ -1514,7 +1512,7 @@ input:focus, textarea:focus{
   flex-wrap: wrap;
 }
 
-/* Botón ghost para "Quitar" */
+
 .btnSmall--ghost{
   background: transparent;
   border: 1px solid rgba(255,255,255,.12);

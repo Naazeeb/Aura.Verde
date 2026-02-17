@@ -240,7 +240,6 @@ export default function Home() {
         <div className="container">
           <div className="card ritual">
             <div className="ritual__grid">
-              {/* IZQUIERDA */}
               <div className="ritual__content">
                 <div className="kicker">Ritual</div>
 
@@ -289,7 +288,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* DERECHA */}
               <div className="ritual__media">
                 
                 <div className="ritual__stack">

@@ -67,7 +67,6 @@ export default function About() {
   return (
     <section className="section aboutPage">
       <div className="container">
-        {/* HERO */}
         <header className="aboutHero">
           <div className="kicker">Nosotros</div>
 
@@ -90,7 +89,6 @@ export default function About() {
           </div>
         </header>
 
-        {/* HISTORIA */}
         <div className="aboutSplit">
           <div className="aboutBlock">
             <div className="kicker">Nuestra historia</div>
@@ -131,7 +129,6 @@ export default function About() {
 
         <div className="aboutDivider" aria-hidden="true" />
 
-        {/* QUE HACEMOS */}
         <h2 className="h2 aboutH2">Qué hacemos</h2>
         <div className="grid4 aboutGrid">
           {[
@@ -165,7 +162,6 @@ export default function About() {
           ))}
         </div>
 
-        {/* CÓMO TRABAJAMOS */}
         <h2 className="h2 aboutH2">Cómo trabajamos</h2>
         <div className="grid4 aboutGrid">
           {steps.map((s) => (
@@ -178,7 +174,6 @@ export default function About() {
           ))}
         </div>
 
-        {/* LO QUE DEFENDEMOS */}
         <h2 className="h2 aboutH2">Lo que defendemos</h2>
         <div className="grid4 aboutGrid">
           {values.map((v) => (
@@ -191,7 +186,6 @@ export default function About() {
           ))}
         </div>
 
-        {/* NOTA */}
         <div className="card aboutNote" id="una-nota-simple">
           <div className="kicker">Una nota simple</div>
           <p className="p" style={{ margin: "10px 0 0", maxWidth: 980 }}>

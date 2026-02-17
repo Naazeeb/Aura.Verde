@@ -20,7 +20,6 @@ export default function ProductCard({ product, onView }) {
   };
 
   const handleUndo = () => {
-    // deshace 1 unidad (si era la única, lo quita)
     decQty(product.id);
     setAddedOpen(false);
   };
