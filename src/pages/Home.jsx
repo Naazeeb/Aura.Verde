@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { collections, products } from "../data/products.js";
 import { useStore } from "../context/StoreContext.jsx";
@@ -316,7 +316,7 @@ export default function Home() {
 
           <div className="gridProducts">
             {featured.map((p) => (
-              <ProductCard key={p.id} product={p} onView={() => addToCart(p, 1)} />
+              <ProductCard key={p.id} product={p} />
             ))}
           </div>
         </div>

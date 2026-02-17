@@ -9,6 +9,11 @@ export default function ProductCard({ product, onView }) {
   const [addedOpen, setAddedOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
 
+  const openQuickView = () => {
+    onView?.(product);
+    setQuickOpen(true);
+  };
+
   const handleAdd = () => {
     addToCart(product, 1);
     setAddedOpen(true);
@@ -22,8 +27,20 @@ export default function ProductCard({ product, onView }) {
 
   return (
     <article className="productCard">
-      <div className="thumb" aria-hidden="true">
-        {product.image ? <img className="thumb__img" src={product.image} alt="" /> : null}
+      <div
+        className="thumb"
+        onClick={openQuickView}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openQuickView();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        style={{ cursor: "pointer" }}
+      >
+        {product.image ? <img className="thumb__img" src={product.image} alt={product.name} /> : null}
         <span>{product.category === "terrarios" ? "Terrario" : "Interior"}</span>
         <span>{product.size}</span>
       </div>
@@ -50,10 +67,7 @@ export default function ProductCard({ product, onView }) {
       <div className="cardActions">
         <button
           className="btnSmall"
-          onClick={() => {
-            onView?.(product);
-            setQuickOpen(true);
-          }}
+          onClick={openQuickView}
           type="button"
         >
           Ver

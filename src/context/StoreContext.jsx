@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { products } from "../data/products.js";
 
 const StoreContext = createContext(null);
 const LS_KEY = "auraverde_cart_v1";
+const productsById = new Map(products.map((p) => [p.id, p]));
 
 function safeParse(json) {
   try {
@@ -17,7 +19,23 @@ export function StoreProvider({ children }) {
   const [cart, setCart] = useState(() => {
     const raw = localStorage.getItem(LS_KEY);
     const parsed = raw ? safeParse(raw) : null;
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((item) => {
+        const product = productsById.get(item?.id);
+        const qty = Number.isFinite(item?.qty) ? item.qty : 0;
+        if (!item?.id || qty <= 0) return null;
+        return {
+          id: item.id,
+          name: product?.name ?? item.name,
+          price: product?.price ?? item.price,
+          image: product?.image ?? item.image,
+          category: product?.category ?? item.category,
+          size: product?.size ?? item.size,
+          qty,
+        };
+      })
+      .filter(Boolean);
   });
 
   useEffect(() => {
@@ -48,13 +66,32 @@ export function StoreProvider({ children }) {
           const found = prev.find((i) => i.id === product.id);
           if (found) {
             return prev.map((i) =>
-              i.id === product.id ? { ...i, qty: i.qty + qty } : i
+              i.id === product.id
+                ? {
+                    ...i,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    category: product.category,
+                    size: product.size,
+                    qty: i.qty + qty,
+                  }
+                : i
             );
           }
-          return [...prev, { id: product.id, name: product.name, price: product.price, qty }];
+          return [
+            ...prev,
+            {
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              image: product.image,
+              category: product.category,
+              size: product.size,
+              qty,
+            },
+          ];
         });
-
-        setUi((s) => ({ ...s, cartOpen: true }));
       },
 
       decQty(id) {
