@@ -780,6 +780,8 @@ button, input{ font-family: inherit; }
   display:none;
   align-items:center;
   justify-content:center;
+  overflow-y: auto;
+  padding: 14px;
   z-index: 200;
 }
 .modalBackdrop.isOpen{ display:flex; }
@@ -798,6 +800,8 @@ button, input{ font-family: inherit; }
 }
 .modal--quick{
   width: min(860px, 92vw);
+  max-height: 92vh;
+  overflow-y: auto;
   animation: zoomIn .22s ease;
   position: relative;
 }
@@ -1033,6 +1037,14 @@ input:focus, textarea:focus{
   }
   .modal--quick{
     width: min(860px, 95vw);
+    max-height: 90vh;
+  }
+  .quickView__media{ max-height: 36vh; }
+  .quickView__actions{
+    position: sticky;
+    bottom: 0;
+    background: var(--bg);
+    padding-top: 8px;
   }
   .modal--scene{
     width: 96vw;
