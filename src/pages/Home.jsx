@@ -1,10 +1,11 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { collections, products } from "../data/products.js";
+import { collections } from "../data/products.js";
 import { useStore } from "../context/store.js";
 import ProductCard from "../components/ProductCard.jsx";
 import ProductQuickViewModal from "../components/ProductQuickViewModal.jsx";
 import AddedModal from "../components/AddedModal.jsx";
+import { getProducts } from "../api/products.js";
 import rinconCasa from "../assets/rincon_casa.jpg";
 import escritorio from "../assets/escritorio.jpg";
 import banoNatural from "../assets/baño_natural.jpg";
@@ -13,19 +14,38 @@ import luzMatinal from "../assets/luz_matinal.jpg";
 export default function Home() {
   const nav = useNavigate();
   const { addToCart, decQty } = useStore();
-  const featured = products.slice(0, 6);
+  const [catalogProducts, setCatalogProducts] = useState([]);
+  const featured = catalogProducts.slice(0, 6);
   const scenes = [
     { title: "Rincón sereno", image: rinconCasa, alt: "Rincón sereno con plantas" },
     { title: "En el escritorio", image: escritorio, alt: "Escritorio con plantas" },
     { title: "Baño natural", image: banoNatural, alt: "Baño con plantas y luz suave" },
     { title: "Luz matinal", image: luzMatinal, alt: "Luz matinal con vegetación" },
   ];
-  const heroItems = useMemo(() => pickRandom(products, 5), []);
+  const heroItems = useMemo(() => pickRandom(catalogProducts, 5), [catalogProducts]);
   const [heroIndex, setHeroIndex] = useState(0);
   const [pausedUntil, setPausedUntil] = useState(0);
   const [heroQuickOpen, setHeroQuickOpen] = useState(false);
   const [heroAdded, setHeroAdded] = useState({ open: false, name: "", id: null });
   const [sceneViewerIndex, setSceneViewerIndex] = useState(-1);
+
+  useEffect(() => {
+    let alive = true;
+
+    (async () => {
+      try {
+        const data = await getProducts({ page: 1, limit: 24, sort: "newest" });
+        if (alive) setCatalogProducts((data.items || []).map(mapHomeProduct));
+      } catch (error) {
+        console.error("No pude cargar productos en Home", error);
+        if (alive) setCatalogProducts([]);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (heroItems.length <= 1) return undefined;
@@ -500,6 +520,25 @@ function pickRandom(list, count) {
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy.slice(0, count);
+}
+
+function mapHomeProduct(product) {
+  return {
+    _id: product._id,
+    id: product._id,
+    name: product.name,
+    category: String(product.category || "").toLowerCase(),
+    price: product.price,
+    image: product.image,
+    description: product.description,
+    size: "-",
+    light: "-",
+    watering: "-",
+    level: "-",
+    petFriendly: false,
+    ideal: "Interiores",
+    tags: [],
+  };
 }
 
 

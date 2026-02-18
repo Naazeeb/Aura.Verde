@@ -1,7 +1,9 @@
 ﻿import React, { useMemo, useState } from "react";
 import { useStore } from "../context/store.js";
+import { useAuth } from "../context/auth.js";
 import ConfirmModal from "./ConfirmModal.jsx";
 import { formatARS, products } from "../data/products.js";
+import { apiRequest, authHeaders } from "../lib/api.js";
 
 function XIcon() {
   return (
@@ -15,31 +17,24 @@ function XIcon() {
 }
 
 export default function CartDrawer() {
-  const { ui, cart, closeCart, incQty, decQty, removeItem, clearCart } =
-    useStore();
+  const { ui, cart, closeCart, incQty, decQty, removeItem, clearCart } = useStore();
+  const { user, openAuth } = useAuth();
 
   const [confirm, setConfirm] = useState({
     open: false,
     kind: null,
     payload: null,
   });
+  const [buyLoading, setBuyLoading] = useState(false);
 
-  const total = useMemo(
-    () => cart.reduce((acc, i) => acc + i.price * i.qty, 0),
-    [cart]
-  );
-
+  const total = useMemo(() => cart.reduce((acc, i) => acc + i.price * i.qty, 0), [cart]);
   const count = useMemo(() => cart.reduce((acc, i) => acc + i.qty, 0), [cart]);
 
-  const openRemove = (item) =>
-    setConfirm({ open: true, kind: "remove", payload: item });
-  const openClear = () =>
-    setConfirm({ open: true, kind: "clear", payload: null });
+  const openRemove = (item) => setConfirm({ open: true, kind: "remove", payload: item });
+  const openClear = () => setConfirm({ open: true, kind: "clear", payload: null });
   const openBuy = () => setConfirm({ open: true, kind: "buy", payload: null });
-  const openInc = (item) =>
-    setConfirm({ open: true, kind: "inc", payload: item });
-  const openDec = (item) =>
-    setConfirm({ open: true, kind: "dec", payload: item });
+  const openInc = (item) => setConfirm({ open: true, kind: "inc", payload: item });
+  const openDec = (item) => setConfirm({ open: true, kind: "dec", payload: item });
 
   const title =
     confirm.kind === "remove"
@@ -56,23 +51,18 @@ export default function CartDrawer() {
 
   const description = (() => {
     const item = confirm.payload;
-    if (confirm.kind === "remove")
-      return `¿Querés quitar “${item?.name}” del carrito?`;
-    if (confirm.kind === "clear")
-      return "¿Querés vaciar el carrito? Esta acción no se puede deshacer.";
-    if (confirm.kind === "buy")
-      return "¿Confirmás la compra? (Demo: no se envía pago real).";
-    if (confirm.kind === "inc")
-      return `¿Querés aumentar la cantidad de “${item?.name}”?`;
+    if (confirm.kind === "remove") return `¿Querés quitar "${item?.name}" del carrito?`;
+    if (confirm.kind === "clear") return "¿Querés vaciar el carrito? Esta acción no se puede deshacer.";
+    if (confirm.kind === "buy") return "¿Confirmás la compra?";
+    if (confirm.kind === "inc") return `¿Querés aumentar la cantidad de "${item?.name}"?`;
     if (confirm.kind === "dec") {
-      if (item?.qty === 1)
-        return `Esto va a quitar “${item?.name}” del carrito. ¿Confirmás?`;
-      return `¿Querés reducir la cantidad de “${item?.name}”?`;
+      if (item?.qty === 1) return `Esto va a quitar "${item?.name}" del carrito. ¿Confirmás?`;
+      return `¿Querés reducir la cantidad de "${item?.name}"?`;
     }
     return "¿Querés continuar?";
   })();
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     const item = confirm.payload;
 
     if (confirm.kind === "remove" && item) removeItem(item.id);
@@ -81,9 +71,45 @@ export default function CartDrawer() {
     if (confirm.kind === "dec" && item) decQty(item.id);
 
     if (confirm.kind === "buy") {
-      clearCart();
-      closeCart();
-      alert("Compra realizada. Gracias por elegir Aura Verde.");
+      if (!user?.token) {
+        setConfirm({ open: false, kind: null, payload: null });
+        openAuth("login");
+        alert("Iniciá sesión para completar la compra.");
+        return;
+      }
+
+      const hasLocalItems = cart.some((cartItem) => {
+        const productId = cartItem._id || cartItem.id;
+        return !productId || !/^[a-f0-9]{24}$/i.test(productId);
+      });
+      if (hasLocalItems) {
+        setConfirm({ open: false, kind: null, payload: null });
+        alert("Hay productos locales en el carrito. Agregalos desde /products para finalizar la compra.");
+        return;
+      }
+
+      try {
+        setBuyLoading(true);
+        await apiRequest("/orders", {
+          method: "POST",
+          headers: authHeaders(user.token),
+          body: {
+            items: cart.map((cartItem) => ({
+              productId: cartItem._id || cartItem.id,
+              qty: Number(cartItem.qty),
+            })),
+          },
+        });
+
+        clearCart();
+        closeCart();
+        alert("Compra realizada. Gracias por elegir Aura Verde.");
+      } catch (error) {
+        const details = error?.errors ? `\nDetalle: ${JSON.stringify(error.errors)}` : "";
+        alert(`${error.message || "No se pudo completar la compra."}${details}`);
+      } finally {
+        setBuyLoading(false);
+      }
     }
 
     setConfirm({ open: false, kind: null, payload: null });
@@ -91,16 +117,9 @@ export default function CartDrawer() {
 
   return (
     <>
-      <div
-        className={ui.cartOpen ? "drawerBackdrop isOpen" : "drawerBackdrop"}
-        onClick={closeCart}
-        aria-hidden="true"
-      />
+      <div className={ui.cartOpen ? "drawerBackdrop isOpen" : "drawerBackdrop"} onClick={closeCart} aria-hidden="true" />
 
-      <aside
-        className={ui.cartOpen ? "drawer isOpen" : "drawer"}
-        aria-label="Carrito"
-      >
+      <aside className={ui.cartOpen ? "drawer isOpen" : "drawer"} aria-label="Carrito">
         <div className="drawer__head">
           <div className="drawer__title">
             <h3>Tu carrito</h3>
@@ -109,12 +128,7 @@ export default function CartDrawer() {
             </span>
           </div>
 
-          <button
-            className="iconBtn"
-            onClick={closeCart}
-            aria-label="Cerrar carrito"
-            type="button"
-          >
+          <button className="iconBtn" onClick={closeCart} aria-label="Cerrar carrito" type="button">
             <XIcon />
           </button>
         </div>
@@ -123,47 +137,35 @@ export default function CartDrawer() {
           {cart.length === 0 ? (
             <div className="cartEmpty">
               <p className="p" style={{ margin: 0 }}>
-                Tu carrito está vacío. Elegí una planta y armemos un rincón con
-                calma.
+                Tu carrito está vacío. Elegí una planta y armemos un rincón con calma.
               </p>
 
               <div className="cartEmpty__actions">
-                <a
-                  className="btnSmall btnSmall--primary"
-                  href="/products"
-                  onClick={closeCart}
-                >
+                <a className="btnSmall btnSmall--primary" href="/products" onClick={closeCart}>
                   Ver catálogo
                 </a>
               </div>
             </div>
           ) : (
-            cart.map((item) => {
-              const fallbackImage = products.find((p) => p.id === item.id)?.image;
-              const imageSrc = item.image || fallbackImage;
+            cart.map((cartItem) => {
+              const fallbackImage = products.find((p) => p.id === cartItem.id)?.image;
+              const imageSrc = cartItem.image || fallbackImage;
 
               return (
-                <article className="cartItem" key={item.id}>
+                <article className="cartItem" key={cartItem.id}>
                   <div className="cartItem__row">
                     <div className="cartItem__thumb">
-                      {imageSrc ? (
-                        <img src={imageSrc} alt={item.name} loading="lazy" />
-                      ) : (
-                        <div
-                          className="cartItem__thumbFallback"
-                          aria-hidden="true"
-                        />
-                      )}
+                      {imageSrc ? <img src={imageSrc} alt={cartItem.name} loading="lazy" /> : <div className="cartItem__thumbFallback" aria-hidden="true" />}
                     </div>
 
                     <div className="cartItem__body">
                       <div className="cartItem__top">
-                        <div className="cartItem__name">{item.name}</div>
+                        <div className="cartItem__name">{cartItem.name}</div>
 
                         <button
                           className="cartItem__removeIcon"
-                          onClick={() => openRemove(item)}
-                          aria-label={`Quitar ${item.name}`}
+                          onClick={() => openRemove(cartItem)}
+                          aria-label={`Quitar ${cartItem.name}`}
                           type="button"
                           title="Quitar"
                         >
@@ -172,34 +174,22 @@ export default function CartDrawer() {
                       </div>
 
                       <div className="cartItem__meta">
-                        <span>{formatARS(item.price)} c/u</span>
-                        <strong>{formatARS(item.price * item.qty)}</strong>
+                        <span>{formatARS(cartItem.price)} c/u</span>
+                        <strong>{formatARS(cartItem.price * cartItem.qty)}</strong>
                       </div>
 
                       <div className="cartItem__bottom">
                         <div className="qty">
-                          <button
-                            onClick={() => openDec(item)}
-                            aria-label="Disminuir cantidad"
-                            type="button"
-                          >
-                            −
+                          <button onClick={() => openDec(cartItem)} aria-label="Disminuir cantidad" type="button">
+                            -
                           </button>
-                          <span>{item.qty}</span>
-                          <button
-                            onClick={() => openInc(item)}
-                            aria-label="Aumentar cantidad"
-                            type="button"
-                          >
+                          <span>{cartItem.qty}</span>
+                          <button onClick={() => openInc(cartItem)} aria-label="Aumentar cantidad" type="button">
                             +
                           </button>
                         </div>
 
-                        <button
-                          className="btnSmall btnSmall--ghost"
-                          onClick={() => openRemove(item)}
-                          type="button"
-                        >
+                        <button className="btnSmall btnSmall--ghost" onClick={() => openRemove(cartItem)} type="button">
                           Quitar
                         </button>
                       </div>
@@ -218,20 +208,10 @@ export default function CartDrawer() {
           </div>
 
           <div className="drawerBtns">
-            <button
-              className="btnSmall"
-              onClick={openClear}
-              disabled={cart.length === 0}
-              type="button"
-            >
+            <button className="btnSmall" onClick={openClear} disabled={cart.length === 0} type="button">
               Vaciar
             </button>
-            <button
-              className="btnSmall btnSmall--primary"
-              onClick={openBuy}
-              disabled={cart.length === 0}
-              type="button"
-            >
+            <button className="btnSmall btnSmall--primary" onClick={openBuy} disabled={cart.length === 0} type="button">
               Comprar
             </button>
           </div>
@@ -242,7 +222,7 @@ export default function CartDrawer() {
         open={confirm.open}
         title={title}
         description={description}
-        confirmText={confirm.kind === "buy" ? "Confirmar compra" : "Confirmar"}
+        confirmText={confirm.kind === "buy" ? (buyLoading ? "Procesando..." : "Confirmar compra") : "Confirmar"}
         cancelText="Cancelar"
         onCancel={() => setConfirm({ open: false, kind: null, payload: null })}
         onConfirm={handleConfirm}

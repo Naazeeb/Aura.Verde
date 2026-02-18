@@ -1,45 +1,45 @@
-# Aura Verde
+﻿# Aura Verde Frontend
 
-E-commerce de plantas y terrarios hecho con **React + Vite**.
+Frontend React + Vite para Aura Verde (consume backend Node/Express).
 
-## Links
-- **Repositorio:** https://github.com/Naazeeb/Aura-Verde  
-- **Deploy (Vercel):** https://auraverde.vercel.app/
-
-## Funcionalidades (resumen)
-- Landing page con **Navbar responsive** (menú móvil) y secciones principales.
-- Catálogo de **productos renderizados dinámicamente**.
-- **Filtros** de productos.
-- **Carrito**: agregar, eliminar, modificar cantidades, vaciar y comprar.
-- **Modales de confirmación** para acciones críticas del carrito.
-- **Persistencia del carrito** en `localStorage`.
-- Página de contacto con **Formik + Yup** (validaciones y mensaje de envío correcto).
-
-## Tecnologías
-- React
-- React Router
-- Context API
-- Formik + Yup
-- Vite
-
-## Instalación y uso
+## Setup local
 ```bash
 npm install
 npm run dev
 ```
 
-## Build de producción
+## Variables de entorno
+Crear `aura-verde/.env`:
+
+```env
+VITE_API_URL=http://localhost:4000
+```
+
+Cada cambio en `.env` requiere reiniciar Vite.
+
+## Integracion API
+- Productos: `GET /products`
+- Auth: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`
+- Orders: `POST /orders`, `GET /orders/me`
+- Imagenes: `product.image` (rutas `/images/...` servidas por backend)
+
+## Proxy dev (imagenes)
+`vite.config.js` incluye proxy:
+- `/images` -> `http://localhost:4000`
+
+## Build
 ```bash
 npm run build
 npm run preview
 ```
 
-## Rutas principales
-- `/` → Home
-- `/about` → Sobre nosotros
-- `/products` → Catálogo + filtros + carrito
-- `/contact` → Formulario de contacto
+## Deploy
+- Vercel env var: `VITE_API_URL=https://TU_BACKEND_DEPLOY_URL`
 
-## Entrega
-- GitHub: https://github.com/Naazeeb/Aura-Verde
-- Vercel: https://auraverde.vercel.app/
+## Links de entrega (completar)
+- Front GitHub: `https://github.com/TU_USUARIO/TU_REPO_FRONT`
+- Front Deploy: `https://TU_FRONT.vercel.app`
+- Back Deploy: `https://TU_BACKEND_DEPLOY_URL`
+- Swagger: `https://TU_BACKEND_DEPLOY_URL/docs`
+
+# Aura.Verde

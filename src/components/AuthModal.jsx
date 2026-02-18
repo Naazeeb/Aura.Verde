@@ -28,19 +28,19 @@ export default function AuthModal() {
   const portalTarget = typeof document !== "undefined" ? document.body : null;
   if (!portalTarget) return null;
 
-  function submitLogin(e) {
+  async function submitLogin(e) {
     e.preventDefault();
     setError("");
     if (!loginData.email || !loginData.password) {
       setError("Completá email y contraseña.");
       return;
     }
-    const result = login(loginData);
+    const result = await login(loginData);
     if (!result.ok) setError(result.message);
     else setLoginData(initialLogin);
   }
 
-  function submitRegister(e) {
+  async function submitRegister(e) {
     e.preventDefault();
     setError("");
     if (!registerData.name || !registerData.email || !registerData.password) {
@@ -55,7 +55,7 @@ export default function AuthModal() {
       setError("Las contraseñas no coinciden.");
       return;
     }
-    const result = register(registerData);
+    const result = await register(registerData);
     if (!result.ok) setError(result.message);
     else setRegisterData(initialRegister);
   }
@@ -168,3 +168,4 @@ export default function AuthModal() {
     portalTarget
   );
 }
+

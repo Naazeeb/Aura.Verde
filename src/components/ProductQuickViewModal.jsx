@@ -2,6 +2,14 @@
 import { createPortal } from "react-dom";
 import { formatARS } from "../data/products.js";
 
+function resolveImageSrc(image) {
+  if (!image) return "";
+  const base = import.meta.env.VITE_API_URL || "http://localhost:4000";
+  if (image.startsWith("http")) return image;
+  if (image.startsWith("/images/")) return `${base}${image}`;
+  return image;
+}
+
 const descriptionsById = {
   "av-001": "Una lanza verde que custodia el hogar: firme, silenciosa y siempre elegante.",
   "av-002": "Brilla como si guardara luz propia; una presencia serena que nunca se rinde.",
@@ -48,6 +56,7 @@ function formatWater(watering) {
 export default function ProductQuickViewModal({ open, product, onClose, onAdd }) {
   const closeBtnRef = useRef(null);
   const lastActiveRef = useRef(null);
+  const imgSrc = resolveImageSrc(product?.image);
 
   const description = useMemo(() => {
     if (!product) return "";
@@ -105,7 +114,7 @@ export default function ProductQuickViewModal({ open, product, onClose, onAdd })
 
         <div className="quickView">
           <div className="quickView__media">
-            {product.image ? <img src={product.image} alt={product.name} /> : null}
+            {imgSrc ? <img src={imgSrc} alt={product.name} /> : null}
           </div>
 
           <div className="quickView__content">

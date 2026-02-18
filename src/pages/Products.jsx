@@ -1,67 +1,91 @@
-﻿import React, { useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { products as allProducts } from "../data/products.js";
 import ProductCard from "../components/ProductCard.jsx";
-import Quiz from "../components/Quiz.jsx";
+import { getProducts } from "../api/products.js";
 
-const filterDefs = {
-  light: ["baja-media", "media", "media-alta", "alta"],
-  level: ["principiante", "intermedio"],
-  size: ["S", "M", "L"],
-};
+function mapProduct(product) {
+  return {
+    _id: product._id,
+    id: product._id,
+    name: product.name,
+    category: String(product.category || "").toLowerCase(),
+    price: product.price,
+    image: product.image,
+    description: product.description,
+    size: "-",
+    light: "-",
+    watering: "-",
+    level: "-",
+    petFriendly: false,
+    ideal: "Interiores",
+    tags: [],
+  };
+}
 
 export default function Products() {
   const [params, setParams] = useSearchParams();
-  const [search, setSearch] = useState("");
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [total, setTotal] = useState(0);
 
-  const filters = useMemo(() => ({
-    category: params.get("category") || "",
-    light: params.get("light") || "",
-    watering: params.get("watering") || "",
-    level: params.get("level") || "",
-    size: params.get("size") || "",
-    petFriendly: params.get("petFriendly") === "true",
-  }), [params]);
+  const filters = useMemo(
+    () => ({
+      q: params.get("q") || "",
+      category: params.get("category") || "",
+      minPrice: params.get("minPrice") || "",
+      maxPrice: params.get("maxPrice") || "",
+      sort: params.get("sort") || "newest",
+      page: Number(params.get("page") || "1"),
+      limit: Number(params.get("limit") || "12"),
+    }),
+    [params]
+  );
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return allProducts.filter((p) => {
-      if (filters.category && p.category !== filters.category) return false;
-      if (filters.light && p.light !== filters.light) return false;
-      if (filters.watering && p.watering !== filters.watering) return false;
-      if (filters.level && p.level !== filters.level) return false;
-      if (filters.size && p.size !== filters.size) return false;
-      if (params.get("petFriendly") === "true" && !p.petFriendly) return false;
-      if (q && !p.name.toLowerCase().includes(q)) return false;
-      return true;
-    });
-  }, [search, filters, params]);
+  useEffect(() => {
+    let alive = true;
 
-  function toggleParam(key, value) {
+    const run = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await getProducts({
+          page: filters.page,
+          limit: filters.limit,
+          sort: filters.sort,
+          q: filters.q,
+          category: filters.category,
+          minPrice: filters.minPrice,
+          maxPrice: filters.maxPrice,
+        });
+
+        if (!alive) return;
+        setItems((data.items || []).map(mapProduct));
+        setTotal(data.pagination?.total || 0);
+      } catch (e) {
+        if (!alive) return;
+        setError(e.message || "No se pudo cargar el catalogo");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    };
+
+    run();
+    return () => {
+      alive = false;
+    };
+  }, [filters]);
+
+  function setParam(key, value) {
     const next = new URLSearchParams(params);
-    const current = next.get(key);
-    if (current === value) next.delete(key);
+    if (!value) next.delete(key);
     else next.set(key, value);
-    setParams(next, { replace: true });
-  }
-
-  function toggleBool(key) {
-    const next = new URLSearchParams(params);
-    const on = next.get(key) === "true";
-    if (on) next.delete(key);
-    else next.set(key, "true");
+    if (key !== "page") next.set("page", "1");
     setParams(next, { replace: true });
   }
 
   function clearFilters() {
     setParams(new URLSearchParams(), { replace: true });
-  }
-
-  function applyFromQuiz(preset) {
-    const next = new URLSearchParams(params);
-    Object.entries(preset).forEach(([k, v]) => next.set(k, String(v)));
-    setParams(next, { replace: true });
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
@@ -70,115 +94,105 @@ export default function Products() {
         <div className="productsTop">
           <div>
             <div className="kicker">Productos</div>
-            <h1 className="h1" style={{ fontSize: "clamp(36px, 4.6vw, 54px)" }}>Catálogo</h1>
+            <h1 className="h1" style={{ fontSize: "clamp(36px, 4.6vw, 54px)" }}>
+              Catalogo
+            </h1>
             <p className="p" style={{ maxWidth: 860, marginBottom: 0 }}>
-              Explorá por luz, riego, tamaño y convivencia. Una entrada serena al verde en interiores.
+              Catalogo conectado al backend con busqueda, filtros y orden.
             </p>
           </div>
-
-          <input
-            className="search"
-            placeholder="Buscar por nombre..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            aria-label="Buscar productos"
-          />
         </div>
 
         <div className="productsLayout" style={{ marginTop: 18 }}>
           <div className="card" style={{ padding: 18 }}>
-            <div className="kicker">Filtros</div>
+            <div className="kicker">Filtros API</div>
 
-            <div className="filters">
-              <button className={filters.category === "plantas" ? "chip chip--on" : "chip"} onClick={() => toggleParam("category","plantas")} type="button">
+            <div className="field" style={{ marginTop: 12 }}>
+              <label htmlFor="q">Buscar</label>
+              <input
+                id="q"
+                className="search"
+                placeholder="Buscar por nombre o descripcion"
+                value={filters.q}
+                onChange={(e) => setParam("q", e.target.value)}
+              />
+            </div>
+
+            <div className="filters" style={{ marginTop: 10 }}>
+              <button
+                className={filters.category === "Plantas" ? "chip chip--on" : "chip"}
+                onClick={() =>
+                  setParam(
+                    "category",
+                    filters.category === "Plantas" ? "" : "Plantas"
+                  )
+                }
+                type="button"
+              >
                 Plantas
               </button>
-              <button className={filters.category === "terrarios" ? "chip chip--on" : "chip"} onClick={() => toggleParam("category","terrarios")} type="button">
+              <button
+                className={filters.category === "Terrarios" ? "chip chip--on" : "chip"}
+                onClick={() =>
+                  setParam("category", filters.category === "Terrarios" ? "" : "Terrarios")
+                }
+                type="button"
+              >
                 Terrarios
               </button>
-              <button className={params.get("petFriendly") === "true" ? "chip chip--on" : "chip"} onClick={() => toggleBool("petFriendly")} type="button">
-                Pet-friendly
-              </button>
             </div>
 
-            <div className="filters" style={{ marginTop: 10 }}>
-              <span className="kicker" style={{ marginRight: 8 }}>Luz</span>
-              {filterDefs.light.map((v) => (
-                <button key={v} className={filters.light === v ? "chip chip--on" : "chip"} onClick={() => toggleParam("light", v)} type="button">
-                  {labelLight(v)}
-                </button>
-              ))}
-            </div>
-
-            <div className="filters" style={{ marginTop: 10 }}>
-              <span className="kicker" style={{ marginRight: 8 }}>Riego</span>
-              {["muy-bajo","bajo","medio","alto"].map((v) => (
-                <button key={v} className={filters.watering === v ? "chip chip--on" : "chip"} onClick={() => toggleParam("watering", v)} type="button">
-                  {labelWater(v)}
-                </button>
-              ))}
-            </div>
-
-            <div className="filters" style={{ marginTop: 10 }}>
-              <span className="kicker" style={{ marginRight: 8 }}>Tamaño</span>
-              {filterDefs.size.map((v) => (
-                <button key={v} className={filters.size === v ? "chip chip--on" : "chip"} onClick={() => toggleParam("size", v)} type="button">
-                  {v}
-                </button>
-              ))}
-            </div>
-
-            <div className="filters" style={{ marginTop: 10 }}>
-              <span className="kicker" style={{ marginRight: 8 }}>Nivel</span>
-              {filterDefs.level.map((v) => (
-                <button key={v} className={filters.level === v ? "chip chip--on" : "chip"} onClick={() => toggleParam("level", v)} type="button">
-                  {labelLevel(v)}
-                </button>
-              ))}
+            <div className="field" style={{ marginTop: 10 }}>
+              <label htmlFor="sort">Orden</label>
+              <select
+                id="sort"
+                value={filters.sort}
+                onChange={(e) => setParam("sort", e.target.value)}
+              >
+                <option value="newest">Mas nuevos</option>
+                <option value="price_asc">Precio: menor a mayor</option>
+                <option value="price_desc">Precio: mayor a menor</option>
+                <option value="name_asc">Nombre A-Z</option>
+                <option value="name_desc">Nombre Z-A</option>
+              </select>
             </div>
 
             <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
-              <button className="btnSmall" onClick={clearFilters} type="button">Limpiar filtros</button>
-              <span className="small" style={{ margin: 0 }}>Resultados: <b>{filtered.length}</b></span>
+              <button className="btnSmall" onClick={clearFilters} type="button">
+                Limpiar filtros
+              </button>
+              <span className="small" style={{ margin: 0 }}>
+                Resultados: <b>{total}</b>
+              </span>
             </div>
           </div>
-
-          <Quiz onApply={applyFromQuiz} />
         </div>
 
-        <div className="gridProducts">
-          {filtered.map((p) => <ProductCard key={p.id} product={p} onView={() => {}} />)}
-        </div>
-
-        {filtered.length === 0 && (
+        {loading ? <p className="p">Cargando catalogo...</p> : null}
+        {error ? (
           <div className="card" style={{ padding: 18, marginTop: 14 }}>
             <p className="p" style={{ margin: 0 }}>
-              No encontramos resultados con esos filtros. Probá limpiar filtros o ajustar la búsqueda.
+              {error}
             </p>
           </div>
-        )}
+        ) : null}
+
+        {!loading && !error ? (
+          <div className="gridProducts">
+            {items.map((p) => (
+              <ProductCard key={p._id} product={p} onView={() => {}} />
+            ))}
+          </div>
+        ) : null}
+
+        {!loading && !error && items.length === 0 ? (
+          <div className="card" style={{ padding: 18, marginTop: 14 }}>
+            <p className="p" style={{ margin: 0 }}>
+              No encontramos resultados con esos filtros.
+            </p>
+          </div>
+        ) : null}
       </div>
     </section>
   );
 }
-
-function labelLight(v){
-  if (v === "baja-media") return "Suave";
-  if (v === "media") return "Media";
-  if (v === "media-alta") return "Media/alta";
-  if (v === "alta") return "Plena";
-  return v;
-}
-function labelWater(v){
-  if (v === "muy-bajo") return "Mínimo";
-  if (v === "bajo") return "Bajo";
-  if (v === "medio") return "Medio";
-  if (v === "alto") return "Alto";
-  return v;
-}
-function labelLevel(v){
-  if (v === "principiante") return "Fácil";
-  if (v === "intermedio") return "Intermedio";
-  return v;
-}
-

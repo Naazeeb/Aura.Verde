@@ -4,10 +4,19 @@ import { formatARS } from "../data/products.js";
 import AddedModal from "./AddedModal.jsx";
 import ProductQuickViewModal from "./ProductQuickViewModal.jsx";
 
+function resolveImageSrc(image) {
+  if (!image) return "";
+  const base = import.meta.env.VITE_API_URL || "http://localhost:4000";
+  if (image.startsWith("http")) return image;
+  if (image.startsWith("/images/")) return `${base}${image}`;
+  return image;
+}
+
 export default function ProductCard({ product, onView }) {
   const { addToCart, decQty } = useStore();
   const [addedOpen, setAddedOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
+  const imgSrc = resolveImageSrc(product.image);
 
   const openQuickView = () => {
     onView?.(product);
@@ -39,7 +48,7 @@ export default function ProductCard({ product, onView }) {
         tabIndex={0}
         style={{ cursor: "pointer" }}
       >
-        {product.image ? <img className="thumb__img" src={product.image} alt={product.name} /> : null}
+        {imgSrc ? <img className="thumb__img" src={imgSrc} alt={product.name} /> : null}
         <span>{product.category === "terrarios" ? "Terrario" : "Interior"}</span>
         <span>{product.size}</span>
       </div>

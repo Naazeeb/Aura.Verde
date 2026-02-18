@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { products } from "../data/products.js";
 import { StoreContext } from "./store.js";
 
 const LS_KEY = "auraverde_cart_v1";
-const productsById = new Map(products.map((p) => [p.id, p]));
 
 function safeParse(json) {
   try {
@@ -22,16 +20,17 @@ export function StoreProvider({ children }) {
     if (!Array.isArray(parsed)) return [];
     return parsed
       .map((item) => {
-        const product = productsById.get(item?.id);
+        const resolvedId = item?.id || item?._id;
         const qty = Number.isFinite(item?.qty) ? item.qty : 0;
-        if (!item?.id || qty <= 0) return null;
+        if (!resolvedId || qty <= 0) return null;
         return {
-          id: item.id,
-          name: product?.name ?? item.name,
-          price: product?.price ?? item.price,
-          image: product?.image ?? item.image,
-          category: product?.category ?? item.category,
-          size: product?.size ?? item.size,
+          id: resolvedId,
+          _id: resolvedId,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          category: item.category,
+          size: item.size,
           qty,
         };
       })
@@ -50,7 +49,6 @@ export function StoreProvider({ children }) {
       closeMenu() {
         setUi((s) => ({ ...s, menuOpen: false }));
       },
-
       openCart() {
         setUi((s) => ({ ...s, cartOpen: true }));
       },
@@ -60,7 +58,6 @@ export function StoreProvider({ children }) {
       toggleCart() {
         setUi((s) => ({ ...s, cartOpen: !s.cartOpen }));
       },
-
       addToCart(product, qty = 1) {
         setCart((prev) => {
           const found = prev.find((i) => i.id === product.id);
@@ -69,6 +66,7 @@ export function StoreProvider({ children }) {
               i.id === product.id
                 ? {
                     ...i,
+                    _id: product._id || product.id,
                     name: product.name,
                     price: product.price,
                     image: product.image,
@@ -83,6 +81,7 @@ export function StoreProvider({ children }) {
             ...prev,
             {
               id: product.id,
+              _id: product._id || product.id,
               name: product.name,
               price: product.price,
               image: product.image,
@@ -93,7 +92,6 @@ export function StoreProvider({ children }) {
           ];
         });
       },
-
       decQty(id) {
         setCart((prev) =>
           prev
@@ -101,15 +99,12 @@ export function StoreProvider({ children }) {
             .filter((i) => i.qty > 0)
         );
       },
-
       incQty(id) {
         setCart((prev) => prev.map((i) => (i.id === id ? { ...i, qty: i.qty + 1 } : i)));
       },
-
       removeItem(id) {
         setCart((prev) => prev.filter((i) => i.id !== id));
       },
-
       clearCart() {
         setCart([]);
       },
